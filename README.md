@@ -1,6 +1,6 @@
 # 日迹 · 一天一页的日记
 
-> 版本 1.1 · 纯本地，无账号、无 AI
+> 版本 1.2 · 纯本地，无账号、无 AI
 
 本地优先的日记应用：一天一个 Markdown 文件，存在你自己电脑上。
 没有账号、不上传、不联网。
@@ -19,7 +19,7 @@
 需要 Python 3.9+（只用标准库，无需 pip 安装）。
 
 ```bash
-python app/server.py --data ./data --port 8765 --app
+python app/server.py --data ./data --port 8888 --app
 ```
 
 Windows 上直接双击根目录的 `启动.bat`（调用 `pythonw`，不弹命令行）。
