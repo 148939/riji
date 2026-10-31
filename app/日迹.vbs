@@ -7,4 +7,4 @@ root = fso.GetParentFolderName(here)
 py = "D:\Anaconda\pythonw.exe"
 If Not fso.FileExists(py) Then py = "pythonw.exe"
 sh.CurrentDirectory = root
-sh.Run """" & py & """ """ & root & "\app\server.py"" --data """ & root & "\data"" --port 8888 --lan --app", 0, False
+sh.Run """" & py & """ """ & root & "\app\server.py"" --data """ & root & "\data"" --port 8802 --lan --app", 0, False

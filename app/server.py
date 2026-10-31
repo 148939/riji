@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """日迹 · 本地写作服务.
 
-    python3 scripts/serve.py --data ./data --port 8888
+    python3 scripts/serve.py --data ./data --port 8802
 
-打开 http://127.0.0.1:8888 就能直接在页面上写日记: 写到磁盘、自动重绘日历.
+打开 http://127.0.0.1:8802 就能直接在页面上写日记: 写到磁盘、自动重绘日历.
 只监听本机, 不上传任何内容.
 """
 from __future__ import annotations
@@ -1409,7 +1409,7 @@ def open_app(url: str) -> None:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="日迹 · 本地写作服务")
     parser.add_argument("--data", default=str(journal.DEFAULT_DATA))
-    parser.add_argument("--port", type=int, default=8888)
+    parser.add_argument("--port", type=int, default=8802)
     parser.add_argument("--title", default="日记·鱼")
     parser.add_argument("--who", default="owner", help="这个窗口是谁：owner（我）/ whale（鱼）")
     parser.add_argument("--diary", action="append", default=[], metavar="NAME=PATH",
