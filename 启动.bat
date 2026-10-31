@@ -2,12 +2,12 @@
 rem Riji local diary - double click to open
 cd /d "%~dp0"
 if not exist "data" mkdir data
-if not exist "%USERPROFILE%\Desktop\日迹.lnk" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0app\make-icon.ps1" "%~f0" "%~dp0" >nul 2>nul
+if not exist "%USERPROFILE%\Desktop\日迹 1.0.lnk" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0app\make-icon.ps1" "%~f0" "%~dp0" >nul 2>nul
 
 where pythonw >nul 2>nul
 if errorlevel 1 goto nopy
 
-start "" pythonw "%~dp0app\server.py" --data "%~dp0data" --port 8802 --who owner --title 日迹 --lan --app
+start "" pythonw "%~dp0app\server.py" --data "%~dp0data" --port 8802 --who owner --title "日迹 1.0" --lan --app
 exit /b 0
 
 :nopy
