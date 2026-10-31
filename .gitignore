@@ -1,7 +1,14 @@
 __pycache__/
 *.pyc
-data/
-.build/
-dist/
+
+# 日记数据不进仓库，但保留空目录结构
+data/days/
+data/assets/
+data/index.json
+data/settings.json
+data/accounts.db
+data/drafts/
+
 *.log
+dist/
 .DS_Store
