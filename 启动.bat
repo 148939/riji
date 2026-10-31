@@ -1,20 +1,20 @@
 @echo off
-rem Êó•Ëøπ ¬∑ Êú¨Âú∞ÁâàÔºöÂèåÂáªÂç≥ÂèØ
+rem »’º£ °§ ±æµÿ»’º«£∫À´ª˜¥Úø™
 cd /d "%~dp0"
 if not exist "data" mkdir data
 
-set PY=
-if exist "%~dp0python\pythonw.exe" set PY="%~dp0python\pythonw.exe"
-if not defined PY (
-  where pythonw >nul 2>nul && set PY=pythonw
+rem  ◊¥Œ‘À––£∫‘⁄◊¿√ÊΩ®“ª∏ˆÕº±Í£¨“‘∫ÛÀ´ª˜Õº±Íº¥ø…
+set "LNK=%USERPROFILE%\Desktop\»’º£.lnk"
+if not exist "%LNK%" (
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut('%LNK%');$s.TargetPath='%~f0';$s.WorkingDirectory='%~dp0';$s.IconLocation='%~dp0app\riji.ico,0';$s.Save()" >nul 2>nul
 )
-if not defined PY (
-  where python >nul 2>nul && set PY=python
-)
-if not defined PY (
-  echo ÈúÄË¶Å Python 3.9 ‰ª•‰∏äÔºöhttps://www.python.org/downloads/
-  echo ÂÆâË£ÖÊó∂ÂãæÈÄâ Add Python to PATH„ÄÇ
+
+where pythonw >nul 2>nul
+if errorlevel 1 (
+  echo √ª’“µΩ Python 3.9 “‘…œ£¨«Îœ»∞≤◊∞£∫https://www.python.org/downloads/
+  echo ∞≤◊∞ ±º«µ√π¥—° Add Python to PATH°£
   pause
   exit /b 1
 )
-start "" %PY% "%~dp0app\server.py" --data "%~dp0data" --port 8765 --app
+
+start "" pythonw "%~dp0app\server.py" --data "%~dp0data" --port 8888 --who owner --title »’º£ --lan --app
