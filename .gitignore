@@ -1,9 +1,11 @@
 __pycache__/
 *.pyc
 
-# 日记数据不进仓库，但保留空目录结构
-data/days/
-data/assets/
+# 日记数据不进仓库；只保留空目录（.gitkeep）
+data/days/*
+!data/days/.gitkeep
+data/assets/*
+!data/assets/.gitkeep
 data/index.json
 data/settings.json
 data/accounts.db
