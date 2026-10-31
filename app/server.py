@@ -245,7 +245,7 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):  # 安静一点
         pass
 
-    def _send(self, code: int, body: bytes, ctype: str):
+    def _send(self, code: int, body: bytes, ctype: str, cache: str = "no-store"):
         zipped = False
         try:
             ae = self.headers.get("Accept-Encoding") or ""
@@ -257,7 +257,7 @@ class Handler(BaseHTTPRequestHandler):
             zipped = False
         self.send_response(code)
         self.send_header("Content-Type", ctype)
-        self.send_header("Cache-Control", "no-store")
+        self.send_header("Cache-Control", cache)
         if zipped:
             self.send_header("Content-Encoding", "gzip")
             self.send_header("Vary", "Accept-Encoding")
@@ -280,7 +280,8 @@ class Handler(BaseHTTPRequestHandler):
         ctype = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
         if ctype.startswith("text/") or ctype in ("application/json", "application/javascript"):
             ctype += "; charset=utf-8"
-        self._send(200, path.read_bytes(), ctype)
+        cache = "public, max-age=31536000, immutable" if ctype.startswith("image/") else "no-store"
+        self._send(200, path.read_bytes(), ctype, cache)
 
     def do_GET(self):
         path_only = self.path.split("?")[0]

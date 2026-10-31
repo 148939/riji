@@ -849,6 +849,9 @@
 
     .wrap{padding-bottom:64px}
   }
+
+  /* 1.0 只保留本地日记：隐藏 2.0 才有的入口 */
+  /* 1.0：只保留本地日记 */
 </style>
 </head>
 <body>
@@ -863,7 +866,6 @@
       <button id="btnMonth" class="on">月</button>
       <button id="btnYear">年</button>
       <button id="btnList">列表</button>
-      <button id="btnSummary">小结</button>
       <button id="btnShare">分享</button>
     </div>
   </header>
@@ -1057,36 +1059,6 @@
     <span>设置</span>
   </button>
 </nav>
-<div id="diaryPick" hidden style="position:fixed;right:16px;top:12px;z-index:120;display:flex;gap:8px;align-items:center">
-  <a id="chatLink" href="/chat" style="background:#2a2a2e;color:#ddd;padding:6px 12px;border-radius:8px;text-decoration:none;font-size:13px">聊天室</a>
-  <select id="diarySel" style="background:#1e1e22;color:#ddd;border:1px solid #444;border-radius:8px;padding:6px 10px;font-size:13px"></select>
-</div>
-<script>
-fetch('/api/diaries').then(function(r){return r.json()}).then(function(d){
-  if (!d || !d.list || d.list.length < 2) return;
-  var box = document.getElementById('diaryPick'), sel = document.getElementById('diarySel');
-  d.list.forEach(function(x){
-    var o = document.createElement('option');
-    o.value = x.name; o.textContent = x.name + '（' + x.count + '）';
-    if (x.name === d.current) o.selected = true;
-    sel.appendChild(o);
-  });
-  sel.onchange = function(){ fetch('/api/switch?d=' + encodeURIComponent(sel.value)).then(function(){ location.reload() }); };
-  box.hidden = false;
-  var nav = document.querySelector('nav');
-  function addBtn(id, href, title, svg, label){
-    var b = document.createElement('button');
-    b.id = id; b.title = title; b.onclick = function(){ location.href = href };
-    b.innerHTML = svg + '<span>' + label + '</span>';
-    nav.appendChild(b);
-  }
-  if (d.current.indexOf('大肥鱼') >= 0) {
-    addBtn('navFav', '/collections', '收藏室', '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg>', '收藏室');
-  } else if (d.current.indexOf('小肥鱼') >= 0) {
-    addBtn('navStk', '/stickers', '表情包', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 10h.01M16 10h.01M8 15c1.5 1 6.5 1 8 0"/></svg>', '表情室');
-  }
-}).catch(function(){});
-</script>
 
 
 <div class="overlay" id="sealOverlay" hidden>
@@ -1208,7 +1180,6 @@ fetch('/api/diaries').then(function(r){return r.json()}).then(function(d){
       <button class="x" id="sumClose">×</button>
     </div>
     <div class="chips" id="sumPeriods">
-      <span data-period="week">本周</span>
       <span data-period="month" class="on">本月</span>
       <span data-period="year">今年</span>
     </div>
@@ -1225,21 +1196,6 @@ fetch('/api/diaries').then(function(r){return r.json()}).then(function(d){
 </div>
 <!-- CLOUD-CUT-END -->
 
-<div class="overlay" id="letterOverlay" hidden>
-  <div class="prompt-box">
-    <p><b style="font-weight:600;color:var(--ink)">寄给未来的自己</b><br>
-      写一封信。到那天，它会自己出现在你的记录里。</p>
-    <div class="ed-row">
-      <label>哪天送到<input type="date" id="letterDate"></label>
-    </div>
-    <div class="ed-foot">
-      <button class="btn" id="letterClear">不寄了</button>
-      <span class="grow"></span>
-      <button class="btn" id="letterCancel">取消</button>
-      <button class="btn primary" id="letterOk">确定</button>
-    </div>
-  </div>
-</div>
 
 <div class="ink-bar" id="inkBar" hidden>
   <span class="ink-colors" id="inkColors">
@@ -3334,13 +3290,14 @@ document.getElementById('sealOk').addEventListener('click', function(){
   toast('保存后，每次打开这一天都要输密码');
 });
 
+if (document.getElementById('letterOk')) {
 /* 寄信：只有时间，没有密码 */
 document.getElementById('letterCancel').addEventListener('click', function(){
-  document.getElementById('letterOverlay').hidden = true;
+  var _lo = document.getElementById('letterOverlay'); if (_lo) _lo.hidden = true;
 });
 document.getElementById('letterClear').addEventListener('click', function(){
   pendDeliver = '';
-  document.getElementById('letterOverlay').hidden = true;
+  var _lo = document.getElementById('letterOverlay'); if (_lo) _lo.hidden = true;
   renderWrite(); toast('保存后不再寄出');
 });
 document.getElementById('letterOk').addEventListener('click', function(){
@@ -3351,10 +3308,11 @@ document.getElementById('letterOk').addEventListener('click', function(){
   pendPw = '';
   pendHint = '';
   lockCleared = true;
-  document.getElementById('letterOverlay').hidden = true;
+  var _lo = document.getElementById('letterOverlay'); if (_lo) _lo.hidden = true;
   renderWrite();
   toast('保存后，这封信会在 ' + d + ' 出现');
 });
+}
 document.getElementById('lgOpen').addEventListener('click', tryUnlock);
 document.getElementById('lgPw').addEventListener('keydown', function(ev){
   if (ev.key === 'Enter') tryUnlock();
@@ -3374,9 +3332,16 @@ function cardHTML(e, snip){
   else if (sealed === 'lock') html += '<span class="sealed-label">🔒 上锁的一天' +
     (e.lock_hint ? ' · ' + esc(e.lock_hint) : '') + '</span>';
   else {
-    const tops = entryTopics(e);
-    if (tops.length) {
+    let tops = entryTopics(e);
+    if (typeof tagFilter !== 'undefined' && tagFilter) {
+      const only = tops.filter(function(t){ return (t.tags || []).indexOf(tagFilter) >= 0; });
+      if (only.length) tops = only;
+    }
+    if (typeof onlyNamed !== 'undefined' && onlyNamed) {
+      tops = tops.filter(function(t){ return t.name && !/^话题\s*\d+$/.test(t.name); });
+    }
       // 话题名和它自己的正文一起显示，别拿别的段落凑
+    if (tops.length) {
       html += tops.slice(0, 3).map(function(t){
         const label = (t.label || t.name || '');
         const tt = (t.tags || []).map(function(x2){ return '<i>#' + esc(x2) + '</i>'; }).join('');
@@ -3462,6 +3427,14 @@ function entryTags(e){
 }
 
 let tagFilter = '';
+let onlyNamed = false;
+document.addEventListener('click', function(ev){
+  var b = ev.target.closest && ev.target.closest('#onlyNamed');
+  if (!b) return;
+  onlyNamed = !onlyNamed;
+  b.classList.toggle('on', onlyNamed);
+  renderList();
+});
 
 function renderList(){
   const box = document.getElementById('cards');
@@ -3486,16 +3459,17 @@ function renderList(){
   list.forEach(function(e){ entryTags(e).forEach(function(t){ counts[t] = (counts[t] || 0) + 1; }); });
   const tagNames = Object.keys(counts).sort(function(a, b){ return counts[b] - counts[a]; }).slice(0, 14);
   const lb = document.getElementById('ltags');
-  lb.innerHTML = tagNames.length
-    ? tagNames.map(function(t){
-        return '<button class="ltag' + (t === tagFilter ? ' on' : '') + '" data-t="' + esc(t) + '">#' +
-          esc(t) + '<b>' + counts[t] + '</b></button>';
-      }).join('')
-    : '';
+  const namedCount = list.filter(function(e){ return (entryTopics(e) || []).some(function(t){ return t.name && !/^话题\s*\d+$/.test(t.name); }); }).length;
+  const topicChip = '<button class="ltag' + (onlyNamed ? ' on' : '') + '" data-t="__TOPIC__">话题<b>' + namedCount + '</b></button>';
+  lb.innerHTML = topicChip + tagNames.map(function(t){
+    return '<button class="ltag' + (t === tagFilter ? ' on' : '') + '" data-t="' + esc(t) + '">#' +
+      esc(t) + '<b>' + counts[t] + '</b></button>';
+  }).join('');
   Array.prototype.forEach.call(lb.querySelectorAll('.ltag'), function(b){
     b.addEventListener('click', function(){
       const t = b.getAttribute('data-t');
-      tagFilter = (tagFilter === t) ? '' : t;
+      if (t === '__TOPIC__') { onlyNamed = !onlyNamed; if (onlyNamed) tagFilter = ''; }
+      else { tagFilter = (tagFilter === t) ? '' : t; if (tagFilter) onlyNamed = false; }
       renderList();
       
     });
@@ -3505,6 +3479,7 @@ function renderList(){
 
   const hit = list.filter(function(e){
     if (tagFilter && entryTags(e).indexOf(tagFilter) < 0) return false;
+    if (onlyNamed && !(entryTopics(e) || []).some(function(t){ return t.name && !/^话题\s*\d+$/.test(t.name); })) return false;
     return true;
   });
   document.getElementById('qCount').textContent = hit.length + ' 篇';
@@ -3863,8 +3838,6 @@ async function loadReport(name){
   } catch (e) { toast('读不到这份回顾'); }
 }
 
-const BTN_SUMMARY = document.getElementById('btnSummary');
-if (BTN_SUMMARY) BTN_SUMMARY.addEventListener('click', openSummary);
 const SUM_CLOSE = document.getElementById('sumClose');
 if (SUM_CLOSE) SUM_CLOSE.addEventListener('click', function(){
   document.getElementById('summaryOverlay').hidden = true;
@@ -4038,7 +4011,6 @@ initState();
 const HAS_DATA = DATA.entries.length > 0;
 document.getElementById('btnShare').hidden = !HAS_DATA;
 
-if (BTN_SUMMARY) BTN_SUMMARY.hidden = !HAS_DATA || IS_CLOUD;
 renderStats();
 
 (function(){
