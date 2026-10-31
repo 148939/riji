@@ -20,7 +20,19 @@
 python app/server.py --data ./data --port 8765 --app
 ```
 
-Windows 上双击 `启动.bat` 即可（会调用 `pythonw`，不弹命令行）。
+Windows 上直接双击根目录的 `启动.bat`（调用 `pythonw`，不弹命令行）。
+
+## 目录
+
+```
+启动.bat          Windows 启动
+app/              全部代码
+  server.py       本地服务
+  journal.py      读写 Markdown
+  web/index.html  界面
+  web/icons/      图标
+  tests/          测试（python tests/test_journal.py）
+```
 
 打开后是一个本地网页应用，默认窗口 520×760。
 
