@@ -34,7 +34,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-import accounts  # noqa: E402
+try:  # 1.0 是纯本地版；云端账号模块在 2.0 才启用
+    import accounts  # noqa: E402
+except Exception:  # pragma: no cover
+    accounts = None
 import journal  # noqa: E402
 import render  # noqa: E402
 
@@ -1415,15 +1418,13 @@ def main(argv=None) -> int:
     parser.add_argument("--lan", action="store_true", help="允许同一 WiFi 下的手机访问")
     parser.add_argument("--app", action="store_true", help="用无地址栏的窗口打开（像个应用）")
     parser.add_argument("--open", action="store_true", help="用默认浏览器打开")
-    parser.add_argument("--cloud", action="store_true", help="云端模式：要登录，数据按用户分开")
-    parser.add_argument("--reset-link", metavar="EMAIL", help="生成一个重置密码链接（没配 SMTP 时手动发）")
     args = parser.parse_args(argv)
 
     data_dir = Path(args.data).resolve()
     data_dir.mkdir(parents=True, exist_ok=True)
     Handler.base_dir = data_dir
     Handler.data_dir = data_dir
-    Handler.cloud = bool(args.cloud)
+    Handler.cloud = False  # 1.0 纯本地
     Handler.who = args.who
     Handler.diaries = {}
     Handler.diary_order = []
@@ -1438,16 +1439,6 @@ def main(argv=None) -> int:
         Handler.accounts_db = data_dir / "accounts.db"
         accounts.init(Handler.accounts_db)
 
-    if args.reset_link:
-        Handler.accounts_db = Handler.accounts_db or (data_dir / "accounts.db")
-        accounts.init(Handler.accounts_db)
-        uid, token = accounts.make_reset(Handler.accounts_db, args.reset_link)
-        if not token:
-            print("没有这个邮箱：%s" % args.reset_link)
-            return 1
-        print("两小时内有效：")
-        print("  http://你的域名/#reset=%s" % token)
-        return 0
     Handler.title = args.title
 
     # 已经有一个在跑? 直接把窗口叫出来, 不再起第二个.
