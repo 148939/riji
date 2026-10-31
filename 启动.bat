@@ -7,7 +7,7 @@ if not exist "%USERPROFILE%\Desktop\»’º£.lnk" powershell -NoProfile -ExecutionPo
 where pythonw >nul 2>nul
 if errorlevel 1 goto nopy
 
-start "" pythonw "%~dp0app\server.py" --data "%~dp0data" --port 8888 --who owner --title »’º£ --lan --app
+start "" pythonw "%~dp0app\server.py" --data "%~dp0data" --port 8802 --who owner --title »’º£ --lan --app
 exit /b 0
 
 :nopy
